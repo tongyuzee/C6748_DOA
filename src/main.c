@@ -7,9 +7,9 @@
 /*************************宏定义*************************/
 
 #define     PI      3.141592654
-#define     Fs      200000		//采样频率
+#define     Fs      100000		//采样频率
 #define     N       8			//阵元个数
-#define     R       0.24		//圆阵半径
+#define     R       0.075		//圆阵半径
 #define     Beta    2*PI/N
 #define     C		1500.0		//水下声速
 
@@ -20,7 +20,7 @@
 
 double xin[N][1000]={0};			//输入数据
 double x_d[N][2*b_l+x_l]={0};
-double W[N] = {1,1,1,1,1,1,1,1};
+double W[N] = {0,0,1,1,1,1,1,1};
 double D[20] = {0};
 
 /*************************函数声明*************************/
@@ -34,9 +34,9 @@ int main(void)
 	double theta, delay, sum_c=0, sum_r=0;
 	double v1, v2, v3, a_max, b_max, phi, u, direction=0;
 	T = 360/delta;
+
 	for (t=0; t<T; t++)
 	{
-
 		double w[N]={0};
 		CRS(w, W, N, t);
 		theta = (-180 + t * delta) * PI / 180.0;
@@ -67,14 +67,16 @@ int main(void)
 		sum_r = 0;
 	}
 	n = argmax(D, T);
-	v1 = D[n-1];
+	v1 = D[(n-1+T)%T];
 	v2 = D[n];
-	v3 = D[n+1];
+	v3 = D[(n+1)%T];
 	a_max = v1 - v3;
 	b_max = v1 + v3 - 2 * v2;
 	phi = a_max / b_max;
 	u = -180 + n * delta;
 	direction = u + phi/2.0*delta;
+	if (direction >90)
+		direction = direction - 180;
 	printf("测向值：%f\n",direction);
 	asm(" SWBP 0 ");
 	return 0;
